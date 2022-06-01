@@ -5,7 +5,6 @@ import torch
 import argparse
 from bias_utils import collate, how_many_tokens, find_mask_token
 import pandas as pd
-from model import Aligned_BERT
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser()
@@ -40,11 +39,11 @@ else:
     model = BertForMaskedLM.from_pretrained(bert_model)
 
 if args.language == 'en':
-    from pattern3.en import pluralize, singularize
+    from pattern.en import pluralize, singularize
 elif args.language == 'de':
-    from pattern3.de import pluralize, singularize
+    from pattern.de import pluralize, singularize
 elif args.language == 'es':
-    from pattern3.es import pluralize, singularize
+    from pattern.es import pluralize, singularize
 else:
     pass
 
