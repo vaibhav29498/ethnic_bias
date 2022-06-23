@@ -121,7 +121,7 @@ def main(language, custom_model_path, num):
                     for prior_logit in prior_logits:
                         nat_prior_logit *= float(prior_logit[vocab[token]].item())
 
-                ddf.append(np.log(float(nat_logit / nat_prior_logit)))
+                ddf.append(np.log(float(nat_logit / (nat_prior_logit if nat_prior_logit else np.finfo(np.float32).tiny))))
                 results.append(np.array(ddf))
 
         return pd.DataFrame(results, columns=['nationality', 'normalized_prob'], dtype=(float)).sort_values(
@@ -177,6 +177,8 @@ def main(language, custom_model_path, num):
         print("CB score of {} in {} : {}".format(bert_model, language, np.array(total_var).mean()))
     else:
         print("CB score of {} (from weights {}) in {}: {}".format(bert_model, custom_model_path, language, np.array(total_var).mean()))
+    
+    return np.array(total_var).mean()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
