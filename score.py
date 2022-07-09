@@ -3,15 +3,14 @@ from transformers import BertForMaskedLM, BertTokenizer, AutoConfig
 import numpy as np
 import os
 import torch
-import argparse
 from bias_utils import collate, how_many_tokens, find_mask_token
 import pandas as pd
 from tqdm import tqdm
 
 
-def main(language, custom_model_path, num):
-    use_pretrained = True if custom_model_path is None else False
+def get_score(language, model, num):
 
+    use_pretrained = model is None
     nationality = configuration[language]['nationality']
     bert_model = configuration[language]['bert_model']
     MSK = configuration[language]['MSK']
@@ -24,13 +23,9 @@ def main(language, custom_model_path, num):
     tokenizer = BertTokenizer.from_pretrained(bert_model)
     MSK = tokenizer.mask_token_id
 
-    config = AutoConfig.from_pretrained(bert_model)
     device = torch.device("cuda:"+str(num))
 
-    if custom_model_path:
-        print("Model Loading!")
-        model = torch.load(custom_model_path, map_location=device)
-    else:
+    if model is None:
         print("Using pretrained model!")
         model = BertForMaskedLM.from_pretrained(bert_model)
 
@@ -176,16 +171,6 @@ def main(language, custom_model_path, num):
     if use_pretrained:
         print("CB score of {} in {} : {}".format(bert_model, language, np.array(total_var).mean()))
     else:
-        print("CB score of {} (from weights {}) in {}: {}".format(bert_model, custom_model_path, language, np.array(total_var).mean()))
+        print("CB score of custom model in {}: {}".format(bert_model, language, np.array(total_var).mean()))
     
     return np.array(total_var).mean()
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--language', type=str, required=False, default='ko')
-    parser.add_argument('--custom_model_path', type=str, default=None)
-    parser.add_argument('--num', default=0)
-
-    args = parser.parse_args()
-
-    main(args.language, args.custom_model_path, args.num)
